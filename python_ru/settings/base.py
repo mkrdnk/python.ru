@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 
 import dj_database_url
-from decouple import config
+from decouple import config, Csv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,7 +24,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('DJANGO_SECRET_KEY', default='wgEWT$#WAGWAG@$#HJ4haw')
 
-ALLOWED_HOSTS = ['python.ru', '.python.ru', '127.0.0.1']
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS', default='python.ru,.python.ru,127.0.0.1', cast=Csv(),
+)
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 # Application definition
 
