@@ -1,13 +1,5 @@
-{% load static nginx_image %}
-
-<div id="banner" style="text-align: center;">
-    <a href="{% if link_to %}{{ link_to }}{% endif %}">
-        {% if image %}
-            <img src="{% thumbnail image %}" width="{{width}}" height="{{height}}" alt="">
-        {% endif %}
-
-        {% if context %}
-            {{ context }}
-        {% endif %}
-    </a>
-</div>
+<aside class="site-banner site-banner--{{ place }}{% if place == 'top' or place == 'bottom' %} container{% endif %}" aria-label="Баннер" data-banner-position="{{ place }}">
+  <a class="site-banner__link" href="{{ banner.link_to }}" style="width: {{ banner.safe_width|default:'auto' }};">
+    <img src="{{ banner.file_img.url }}" alt="{{ banner.name }}" decoding="async"{% if place != 'top' %} loading="lazy"{% endif %} style="max-height: {{ banner.safe_height|default:'none' }};">
+  </a>
+</aside>

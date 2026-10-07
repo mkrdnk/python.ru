@@ -1,4 +1,4 @@
-{% load static %}
+{% load static banner_tag %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -24,7 +24,9 @@
 <body>
   <a class="skip-link" href="#main-content">Перейти к содержимому</a>
   {% block header_block %}{% include 'blocks/header.html' %}{% endblock %}
+  {% block banner_top %}{% get_banner 'top' %}{% endblock %}
   <main id="main-content" tabindex="-1">{% block main_content %}{% endblock %}</main>
+  {% block banner_bottom %}{% get_banner 'bottom' %}{% endblock %}
   {% include 'blocks/footer.html' %}
   {% include 'blocks/analytics.html' %}
   {% include 'blocks/search_modal.html' %}

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n url_tag %}
+{% load i18n url_tag banner_tag %}
 {% block title %}{{ post.name }} — Python.ru{% endblock %}
 {% block description %}{{ post.description|striptags|truncatewords:30 }}{% endblock %}
 {% block head %}
@@ -22,6 +22,7 @@
     <div class="prose">{% if post.text %}{{ post.text|safe }}{% elif post.description %}{{ post.description|safe }}{% endif %}</div>
     {% if post.url %}<p class="source-link">Источник: <a href="{{ post.url }}">{% get_host_from_url post.url %} ↗</a></p>{% endif %}
   </article>
+  {% get_banner 'article_end' %}
   <div class="page-bottom"><a href="/">← Все публикации</a><a href="#main-content">Наверх ↑</a></div>
 </div>
 {% endblock %}

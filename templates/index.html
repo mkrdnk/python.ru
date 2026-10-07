@@ -1,4 +1,4 @@
-{% extends 'base.html' %}{% load static %}
+{% extends 'base.html' %}{% load static banner_tag %}
 {% block title %}{% if is_home %}Python.ru — русскоязычное Python-сообщество{% else %}{{ title }} — Python.ru{% endif %}{% endblock %}
 {% block main_content %}
 {% if is_home %}
@@ -10,7 +10,9 @@
 </div></section>{% endif %}
 <div class="container content-layout">
 {% include 'blocks/news.html' %}
-<aside class="sidebar"><section class="events-block" id="events"><div class="section-heading"><div><span class="eyebrow">Календарь</span><h2>Ближайшие события</h2></div></div>{% include 'blocks/event_rows.html' %}<a class="arrow-link" href="/events/">Все события {% include 'blocks/arrow.html' %}</a></section>
+<aside class="sidebar">
+{% get_banner 'sidebar' %}
+<section class="events-block" id="events"><div class="section-heading"><div><span class="eyebrow">Календарь</span><h2>Ближайшие события</h2></div></div>{% include 'blocks/event_rows.html' %}<a class="arrow-link" href="/events/">Все события {% include 'blocks/arrow.html' %}</a></section>
 <section class="digest-block"><span class="eyebrow">Письмо раз в неделю</span><h3>Дайджест Python.ru</h3><p>Главные материалы, новости и события — без шума.</p><form method="post" action="/subscribe/">{% csrf_token %}<input type="email" name="email" maxlength="254" aria-label="Электронная почта" placeholder="you@example.com" required><button type="submit">Подписаться</button></form></section></aside>
 </div>
 <section class="notes-section" id="notes"><div class="container"><div class="section-heading"><div><span class="eyebrow">Короткий формат</span><h2>Заметки сообщества</h2></div><a class="arrow-link" href="/notes/">Все заметки {% include 'blocks/arrow.html' %}</a></div><div class="notes-grid">{% for article in notes %}<article><span class="note-bracket">[{{ forloop.counter }}]</span><p><a href="{{ article.get_absolute_url }}">{{ article.name }}</a></p>{% include 'blocks/article_meta.html' %}</article>{% empty %}<p class="empty-copy">Есть наблюдение или полезный приём? <a href="/contribute/?kind=article">Поделитесь с сообществом {% include 'blocks/arrow.html' %}</a></p>{% endfor %}</div></div></section>

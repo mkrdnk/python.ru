@@ -169,6 +169,48 @@ skip them; as with SMTP generally, a process crash after the server accepts a
 message but before the database commit can require manual delivery reconciliation.
 The command does not schedule recurring sends. Store SMTP credentials outside git.
 
+Banners
+~~~~~~~
+
+Run ``python manage.py migrate`` before using the updated banner admin. The
+migration creates the supported placements and preserves existing banners and
+their placement assignments.
+
+In ``/admin/banners/banner/``, add or edit a banner:
+
+1. Enter a descriptive name (also used as image alternative text), upload an
+   image and enter the destination URL.
+2. Select one or more placements:
+
+   * ``Под шапкой`` (``top``): below the header on public pages.
+   * ``В сайдбаре главной страницы`` (``sidebar``): above the events in the home page sidebar.
+     On narrow screens this column moves below the news list.
+   * ``После статьи`` (``article_end``): after the body and source link on an
+     article page.
+   * ``Перед подвалом`` (``bottom``): before the footer on public pages.
+
+3. Set the start date, optionally an end date, and the weekdays/hours for display.
+   Both dates are inclusive; the ending hour is exclusive (``0–24`` means all
+   day). Scheduling uses the site's ``TIME_ZONE`` (``Europe/Moscow`` by default).
+4. Enable the banner and save. Disable it to stop showing it without deleting it.
+
+Each placement displays one eligible banner: the highest priority wins, and
+equal priorities use the lowest banner ID. There is no random rotation.
+The same banner can appear in multiple selected placements on one page.
+An empty placement adds no markup or reserved space.
+
+Image dimensions can be left blank for the natural size, constrained to the
+available page width. Optional dimensions accept values such as ``720px`` or
+``100%``; width controls the requested size and height limits the image height.
+Images keep their proportions on mobile. Uploaded images are served from
+``MEDIA_URL``; production must serve ``MEDIA_ROOT`` as usual.
+
+Legacy placement records are retained, but arbitrary placement codes do not
+create new areas in the site layout. Reassign old banners to supported placements
+in the admin to show them. Legacy SWF data is retained but is not rendered;
+upload an image instead. Adding an entirely new placement requires a template
+change, not just a new database record.
+
 To rebuild the exact design stylesheet after changing the source::
 
     cd redisign
