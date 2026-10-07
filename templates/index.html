@@ -1,14 +1,28 @@
-{% extends 'base.html' %}
-
-
+{% extends 'base.html' %}{% load static %}
+{% block title %}{% if is_home %}Python.ru — русскоязычное Python-сообщество{% else %}{{ title }} — Python.ru{% endif %}{% endblock %}
 {% block main_content %}
-	{% include 'blocks/news.html' %}
-	{% include 'blocks/subscribe.html' %}
-    {% if events %}
-	{% include 'blocks/events.html' %}
-    {% else %}
-	{% include 'blocks/events_stub.html' %}
-    {% endif %}
-	{% include 'blocks/about_us.html' %}
-	{% include 'blocks/links.html' %}
+{% if is_home %}
+<section class="intro container"><div><span class="eyebrow">Основан в 1999 году</span><h1>Русскоязычное<br>Python-сообщество.</h1></div><p>Люди, события и код вокруг Python.<br>Независимый портал, который делает само сообщество.</p></section>
+{% if lead_articles %}<section class="container now-section"><div class="section-heading"><div><span class="eyebrow">Главное</span><h2>Сейчас на Python.ru</h2></div></div>
+<div class="lead-grid">
+{% for article in lead_articles %}{% if forloop.first %}<article class="lead-story" data-article-id="{{ article.pk }}"><span class="story-index">01</span><div class="lead-content">{% include 'blocks/article_labels.html' %}<h2><a href="{{ article.get_absolute_url }}">{{ article.name }}</a></h2><p>{{ article.description|striptags|truncatewords:50 }}</p>{% include 'blocks/article_meta.html' %}</div></article><div class="secondary-stories">
+{% else %}<article data-article-id="{{ article.pk }}"><span class="content-label {{ article.kind }}">{{ article.get_kind_display|upper }}</span><h3><a href="{{ article.get_absolute_url }}">{{ article.name }}</a></h3><p>{{ article.description|striptags|truncatewords:22 }}</p>{% include 'blocks/article_meta.html' %}</article>{% endif %}{% endfor %}</div>
+</div></section>{% endif %}
+<div class="container content-layout">
+{% include 'blocks/news.html' %}
+<aside class="sidebar"><section class="events-block" id="events"><div class="section-heading"><div><span class="eyebrow">Календарь</span><h2>Ближайшие события</h2></div></div>{% include 'blocks/event_rows.html' %}<a class="arrow-link" href="/events/">Все события {% include 'blocks/arrow.html' %}</a></section>
+<section class="digest-block"><span class="eyebrow">Письмо раз в неделю</span><h3>Дайджест Python.ru</h3><p>Главные материалы, новости и события — без шума.</p><form method="post" action="/subscribe/">{% csrf_token %}<input type="email" name="email" maxlength="254" aria-label="Электронная почта" placeholder="you@example.com" required><button type="submit">Подписаться</button></form></section></aside>
+</div>
+<section class="notes-section" id="notes"><div class="container"><div class="section-heading"><div><span class="eyebrow">Короткий формат</span><h2>Заметки сообщества</h2></div><a class="arrow-link" href="/notes/">Все заметки {% include 'blocks/arrow.html' %}</a></div><div class="notes-grid">{% for article in notes %}<article><span class="note-bracket">[{{ forloop.counter }}]</span><p><a href="{{ article.get_absolute_url }}">{{ article.name }}</a></p>{% include 'blocks/article_meta.html' %}</article>{% empty %}<p class="empty-copy">Есть наблюдение или полезный приём? <a href="/contribute/?kind=article">Поделитесь с сообществом {% include 'blocks/arrow.html' %}</a></p>{% endfor %}</div></div></section>
+<section class="container open-source-section" id="opensource"><div class="section-heading"><div><span class="eyebrow">Сделано здесь</span><h2>Open Source</h2></div><a class="arrow-link" href="/projects/">Все проекты {% include 'blocks/arrow.html' %}</a></div><div class="project-grid">{% include 'blocks/project_rows.html' %}</div></section>
+<section class="container community-section" id="community"><div class="community-copy"><span class="eyebrow">Карта сообщества</span><h2>Python живёт<br>не только в Москве.</h2><p>Локальные встречи, чаты и сообщества разработчиков по всей стране.</p><a class="text-button" href="/community/">Найти своё сообщество {% include 'blocks/arrow.html' %}</a></div><div class="community-list">{% include 'blocks/community_rows.html' %}</div></section>
+{% else %}
+<div class="container archive-page"><header class="archive-heading"><span class="eyebrow">Python.ru / {% if query %}Поиск{% else %}Архив{% endif %}</span><h1>{{ title }}</h1><form class="search-form" action="/search/" method="get" role="search"><label class="visually-hidden" for="news-query">Поиск по сайту</label><input id="news-query" type="search" name="q" value="{{ query }}" placeholder="Материалы, события, проекты…" maxlength="200"><button class="button" type="submit">Найти</button></form>{% if query %}<p class="search-context">По запросу «{{ query }}» · <a href="/materials/">Сбросить поиск</a></p>{% endif %}</header>
+{% include 'blocks/news.html' %}
+{% if search_projects %}<section class="search-results"><h2>Проекты</h2><div class="project-grid">{% include 'blocks/project_rows.html' with projects=search_projects %}</div></section>{% endif %}
+{% if search_events %}<section class="search-results"><h2>События</h2>{% include 'blocks/event_rows.html' with events=search_events %}</section>{% endif %}
+{% if search_communities %}<section class="search-results"><h2>Сообщества</h2><div class="community-list">{% include 'blocks/community_rows.html' with communities=search_communities %}</div></section>{% endif %}
+</div>
+{% endif %}
 {% endblock %}
+{% block extra_js %}<script src="{% static 'js/news-feed.js' %}" defer></script>{% endblock %}

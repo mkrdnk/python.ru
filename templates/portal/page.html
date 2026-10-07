@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}{{ object.title }} — Python.ru{% endblock %}
+{% block main_content %}<article class="reading-page"><a class="back-link" href="/">← На главную</a><header class="article-heading"><span class="eyebrow">Python.ru / Проект</span><h1>{{ object.title }}</h1></header><div class="prose">{{ object.body|safe }}</div></article>{% endblock %}

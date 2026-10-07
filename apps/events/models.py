@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.db.models import QuerySet
 from model_utils.models import TimeStampedModel
 import datetime
@@ -41,6 +42,11 @@ class Event(TimeStampedModel):
     place_and_time_html = models.TextField(null=True, blank=True)
 
     objects = EventQuerySet.as_manager()
+
+    def get_absolute_url(self):
+        if self.has_page_on_site:
+            return reverse('event_detail_view', args=[self.slug])
+        return self.url or reverse('event_by_id', args=[self.pk])
 
     def __str__(self):
         return self.name

@@ -2,7 +2,9 @@
 import datetime
 import vcr
 from django.core.management import call_command
-from django.utils.timezone import utc
+from datetime import timezone
+
+utc = timezone.utc
 
 from apps.news.models import Article
 

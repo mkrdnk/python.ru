@@ -1,62 +1,34 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="google-site-verification" content="RAskX0UNOnUGX4OiXn7jalIRZj-SwZej5FRKUlBHEnM" />
-  <title>Python.ru{% block title %} {% endblock %}</title>
-  {% if request.path == "/" %}
-    <meta property="og:url" content="{{ request.get_host }}">
-    <meta property="og:image" content="{{ request.get_host }}{% static "images/python_ru_social_thumb.png" %}" />
-    <meta property="og:title" content="python.ru" />
-    <meta property="og:description" content="python.ru русскоязычное сообщество языка python" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="python.ru">
-  {% else %}
-    {% block head %}
-
-    {% endblock %}
-  {% endif %}
-
-    
-  <link media="all" rel="stylesheet" href="{% static "css/all.css" %}" />
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicons/apple-touch-icon.png" %}">
-  <link rel="icon" type="image/png" href="{% static "favicons/favicon-32x32.png" %}" sizes="32x32">
-  <link rel="icon" type="image/png" href="{% static "favicons/favicon-16x16.png" %}" sizes="16x16">
-  <link rel="manifest" href="{% static "favicons/manifest.json" %}">
-  <link rel="mask-icon" href="{% static "favicons/safari-pinned-tab.svg" %}" color="#5bbad5">
-  <link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <meta name="theme-color" content="#ffffff">
-
-    
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-site-verification" content="RAskX0UNOnUGX4OiXn7jalIRZj-SwZej5FRKUlBHEnM">
+  <title>{% block title %}Новости и статьи о Python — Python.ru{% endblock %}</title>
+  <meta name="description" content="{% block description %}Новости, статьи и материалы русскоязычного Python-сообщества.{% endblock %}">
+  <meta name="theme-color" content="#f7f9fc">
+  <meta property="og:site_name" content="Python.ru">
+  {% block head %}
+  <meta property="og:title" content="Python.ru — новости и статьи о Python">
+  <meta property="og:type" content="website">
+  {% endblock %}
+  <script src="{% static 'js/theme-init.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/redisign.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicons/apple-touch-icon.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicons/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicons/manifest.json' %}">
 </head>
 <body>
-  <div id="wrapper">
-    <div class="w1">
-    {% load staticfiles nginx_image %}
-      {% block header_block %}
-        {% include 'blocks/header.html' %}
-      {% endblock %}
-      {% load banner_tag %}
-        <div id="block_top_banner">{% get_banner "top_banner" %}</div>
-
-      <main>
-        {% block main_content %}{% endblock %}
-      </main>
-
-      {% include 'blocks/footer.html' %}
-    </div>
-  </div>
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-  <script type="text/javascript" src="{% static "js/masonry.pkgd.min.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.main.js" %}"></script>
+  <a class="skip-link" href="#main-content">Перейти к содержимому</a>
+  {% block header_block %}{% include 'blocks/header.html' %}{% endblock %}
+  <main id="main-content" tabindex="-1">{% block main_content %}{% endblock %}</main>
+  {% include 'blocks/footer.html' %}
   {% include 'blocks/analytics.html' %}
+  {% include 'blocks/search_modal.html' %}
+  <script src="{% static 'js/site.js' %}" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

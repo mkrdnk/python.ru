@@ -1,8 +1,8 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 
 urlpatterns = [
-    url(r'^(?P<event_slug>\w+)/$', views.EventDetailView.as_view(), name='event_detail_view'),
+    re_path(r'^(?P<event_slug>[\w-]+)/$', views.EventDetailView.as_view(), name='event_detail_view'),
 ]

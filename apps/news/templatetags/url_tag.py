@@ -1,10 +1,22 @@
+from urllib.parse import urlsplit
+
 from django import template
-from django.conf import settings
-from django.db.models.fields.files import FieldFile
 
 register = template.Library()
 
+
 @register.simple_tag
 def get_host_from_url(url):
-    response = url.split("/")
-    return response[2]
+    try:
+        return urlsplit(url or '').hostname or 'Источник'
+    except ValueError:
+        return 'Источник'
+
+
+@register.filter
+def compact_number(value):
+    if value is None:
+        return ''
+    if value < 1000:
+        return str(value)
+    return format(value / 1000, '.1f').rstrip('0').rstrip('.') + 'k'

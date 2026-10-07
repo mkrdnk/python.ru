@@ -1,0 +1,7 @@
+-r requirements.in
+pytest>=9,<10
+pytest-django>=4.11,<5
+pytest-cov>=7,<8
+factory-boy>=3.3,<4
+vcrpy>=8,<9
+tox>=4,<5

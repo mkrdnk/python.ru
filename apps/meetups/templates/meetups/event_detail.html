@@ -1,38 +1,10 @@
 {% extends 'base.html' %}
-
-
-{% block header_block %}
-	{% include 'blocks/header_no_menu.html' %}
-{% endblock %}
-
-
+{% block title %}{{ object.name }} — Python.ru{% endblock %}
+{% block description %}{{ object.description_html|striptags|truncatewords:30 }}{% endblock %}
 {% block main_content %}
-	{% include 'blocks/junior.html' %}
-    {% if events %}
-	    {% include 'blocks/events.html' %}
-    {% else %}
-	    {% include 'blocks/events_stub.html' %}
-    {% endif %}
-	{% include 'blocks/about_us.html' %}
-{% endblock %}
-
-
-{% block extra_js %}
-	<script>
-		var resizeIframes = function() {
-		    $('.resizibleIframe').each(function(_, iframeWrapper) {
-		        var ratio = parseFloat($(iframeWrapper).data('ratio')),
-					newHeight = $(iframeWrapper).width() / ratio;
-		        $(iframeWrapper).height(newHeight);
-			});
-		};
-
-		$(window).resize(function() {
-		    resizeIframes();
-		});
-
-		$(function() {
-		    resizeIframes();
-		});
-	</script>
+<div class="reading-page">
+  <a class="back-link" href="/">← К публикациям</a>
+  {% include 'blocks/junior.html' %}
+  <div class="page-bottom"><a href="/">← Все публикации</a><a href="#main-content">Наверх ↑</a></div>
+</div>
 {% endblock %}

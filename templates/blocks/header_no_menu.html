@@ -1,24 +1,13 @@
-{% load staticfiles %}
-
-
-<header class="header">
-  <div class="container">
-    <!-- logo -->
-    <div class="logo"><a href="/"><img src="{% static 'images/logo.png' %}" width="133" height="27" alt="Python.ru"></a></div>
-    <!-- main navigation -->
-    <nav class="main-nav">
-      <a href="#" class="nav-opener"><span>Menu</span></a>
-      <div class="nav-drop">
-        {% block navigation_menu %}{% endblock %}
-      </div>
+<header class="site-header">
+  <div class="container header-inner">
+    {% include 'blocks/logo.html' %}
+    <nav class="main-nav" id="main-nav" aria-label="Основная навигация">
+      <a href="/materials/">Статьи</a><a href="/notes/">Заметки</a><a href="/events/">События</a><a href="/community/">Сообщество</a><a href="/projects/">Open Source</a>
     </nav>
-    <!-- social networks -->
-    <ul class="social-networks">
-      {% for social_link in social_links %}
-        <li>
-          <a href="{{ social_link.url }}" class="icon-{{ social_link.id }}">{{ social_link.name }}</a>
-        </li>
-      {% endfor %}
-    </ul>
+    <div class="header-actions">
+      <a class="icon-button search-button" href="/search/" data-open-search aria-label="Открыть поиск"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Поиск</span><kbd>⌘ K</kbd></a>
+      <button class="icon-button theme-toggle" type="button" aria-label="Включить тёмную тему" aria-pressed="false" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path class="moon-icon" d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.5 8.5 0 1 0 20.5 14.3Z"/><g class="sun-icon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></button>
+      <button class="icon-button mobile-menu" type="button" aria-label="Открыть меню" aria-controls="main-nav" aria-expanded="false" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    </div>
   </div>
 </header>

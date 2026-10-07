@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Python.ru{% endblock %}
+{% block main_content %}<div class="container archive-page">
+<header class="archive-heading"><span class="eyebrow">Python.ru / Сообщество</span><h1>{{ title }}</h1><p><a class="arrow-link" href="/contribute/?kind={% if section == 'projects' %}project{% elif section == 'events' %}event{% else %}community{% endif %}">Предложить {% if section == 'projects' %}проект{% elif section == 'events' %}событие{% else %}сообщество{% endif %} →</a></p></header>
+{% if section == 'projects' %}<div class="project-grid">{% include 'blocks/project_rows.html' with projects=object_list %}</div>{% elif section == 'events' %}<div class="directory-events">{% include 'blocks/event_rows.html' with events=object_list %}</div>{% else %}<div class="community-list">{% include 'blocks/community_rows.html' with communities=object_list %}</div>{% endif %}
+{% if is_paginated %}<nav class="pagination" aria-label="Страницы каталога">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← Назад</a>{% endif %}<span>{{ page_obj.number }} / {{ paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Далее →</a>{% endif %}</nav>{% endif %}
+</div>{% endblock %}

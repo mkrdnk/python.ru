@@ -1,6 +1,6 @@
 # coding: utf-8
 import pytest
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from apps.content.factories import LinkFactory
 from apps.news.factories import ArticleFactory

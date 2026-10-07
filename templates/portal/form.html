@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Python.ru{% endblock %}
+{% block main_content %}<div class="reading-page"><a class="back-link" href="/">← На главную</a><header class="article-heading"><span class="eyebrow">Python.ru / Участвовать</span><h1>{{ title }}</h1><p>{{ intro }}</p></header>
+<form method="post" class="editorial-form">{% csrf_token %}
+{{ form.non_field_errors }}
+{% for field in form %}{% if field.is_hidden %}{{ field }}{% else %}<div class="form-field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endif %}{% endfor %}
+<button class="button" type="submit">{{ button }}</button>
+</form></div>{% endblock %}

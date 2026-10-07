@@ -1,7 +1,6 @@
 import datetime
 import hashlib
 import logging
-import os
 from itertools import chain
 
 import bleach
@@ -13,7 +12,6 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from django.utils.timezone import make_aware
 from lxml.html import fromstring
-from readability import ParserClient
 
 from apps.news.models import Article
 
@@ -82,7 +80,7 @@ def download_image(url):
         return
     logger.info('Fetching image %s', url)
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()
         return response.content
     except requests.RequestException as e:
@@ -106,17 +104,6 @@ def clean_html(html):
     return bleach.clean(html, tags=['p', 'a'], strip=True)
 
 
-def get_page_metadata(url):
-    token = os.environ.get('READABILITY_PARSER_KEY', None)
-    if not token:
-        return {}
-    try:
-        parser_client = ParserClient(token=os.environ.get('READABILITY_PARSER_KEY'))
-        return parser_client.get_article(url).json()
-    except Exception:
-        logger.exception('Failed to readability for url %s', url)
-
-
 def pydigest_article_feed():
     feed = feedparser.parse('https://pythondigest.ru/rss/',
                             agent='PythonRuFetcher/1.0 +https://python.ru/')
@@ -135,19 +122,13 @@ def pydigest_article_feed():
 def pydigest_articles_for_date(date):
     response = requests.get('https://pythondigest.ru/api/items/{year}/{month}/{day}/'.format(
         year=date.year, month=date.month, day=date.day
-    ), headers={'User-Agent': 'PythonRuFetcher/1.0 +https://python.ru/'})
+    ), headers={'User-Agent': 'PythonRuFetcher/1.0 +https://python.ru/'}, timeout=30)
     if not response.json()['ok']:
         logger.info('No stuff found')
         return
 
     for item in response.json()['items']:
         image_bytes, summary = fetch_image_from_summary(item['description'])
-        extra_metadata = get_page_metadata(item['link'])
-
-        # fall back to readability data
-        summary = clean_html(summary) or clean_html(extra_metadata.get('excerpt', ''))
-        # fetch lead image from source
-        image_bytes = image_bytes or download_image(extra_metadata.get('lead_image_url', None))
 
         yield dict(
             url=item['link'],

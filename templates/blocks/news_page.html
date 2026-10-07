@@ -1,0 +1,10 @@
+{% for article in feed_articles %}
+<article class="article-row feed-article" data-article-id="{{ article.pk }}">
+  <span class="article-number" aria-hidden="true"></span>
+  <div>{% include 'blocks/article_labels.html' %}<h3><a href="{{ article.get_absolute_url }}">{{ article.name }}</a></h3>
+    {% if article.description %}<p>{{ article.description|striptags|truncatewords:45 }}</p>{% endif %}
+    {% include 'blocks/article_meta.html' %}
+  </div>
+</article>
+{% empty %}{% if not lead_articles %}<div class="empty-state">{% if query %}<h3>Материалы не найдены</h3><p>Попробуйте другой запрос или <a href="/materials/">откройте архив</a>.</p>{% else %}<h3>Публикаций пока нет.</h3><p>Новые материалы появятся здесь.</p>{% endif %}</div>{% endif %}{% endfor %}
+{% if next_url %}<div class="feed-pagination"><a class="text-button feed-more" href="{{ next_url }}">Показать больше материалов {% include 'blocks/arrow.html' %}</a></div>{% endif %}

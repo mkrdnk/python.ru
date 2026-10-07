@@ -1,0 +1,10 @@
+{
+  "description": "A content-focused portal delivering news, articles, events, and community resources for the Russian-speaking Python developer community.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

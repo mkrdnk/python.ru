@@ -1,52 +1,29 @@
-{% load staticfiles %}
-
-
-<div class="container junior">
+{% load i18n %}
+<article>
+  <header class="article-heading">
+    <p class="eyebrow">ВСТРЕЧИ СООБЩЕСТВА</p>
     <h1>{{ object.name }}</h1>
-    {% if object.is_translation_alive %}
-        <div style="text-align: center">
-            {{ object.translation_video_code | safe }}
-        </div>
-    {% endif %}
-    <div>
-        <div class="junior-about">
-            {{ object.description_html | safe }}
-        </div>
-        <div class="junior-about">
-            {{ object.place_and_time_html | safe }}
-            {% if object.is_registration_available %}
-                <div class="junior-register-wrapper">
-                    <div class="submit-holder">
-                        <a href="{{ object.register_url }}">
-                            <button>Зарегистрироваться</button>
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-        <div class="junior-program">
-            <h2>Программа</h2>
-
-            {% for talk in object.talks.all %}
-                <div class="talk">
-                    <div class="speaker-image">
-                        <img src="{{ talk.speaker.avatar.url }}">
-                        <div class="author">{{ talk.speaker.full_name }}</div>
-                        <a class="work" href="{{ talk.speaker.employer.url }}" target="_blank">{{ talk.speaker.employer.name }}</a>
-                    </div>
-                    <div class="details">
-                    <h4>{{ talk.title }}</h4>
-                    <div>{{ talk.description | safe }}</div>
-                    {% if talk.slides_url or talk.video_url %}
-                        <div class="talk_info">
-                            {% if talk.slides_url %}<div class="slides_wrapper resizibleIframe" data-ratio="1.7">{{ talk.slides_url | safe }}</div>{% endif %}
-                            {% if talk.video_url %}<div class="video_wrapper resizibleIframe" data-ratio="1.7">{{ talk.video_url | safe }}</div>{% endif %}
-                        </div>
-                    {% endif %}
-
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+    <div class="article-meta">{% if object.date %}{% language "ru" %}<time datetime="{{ object.date|date:'c' }}">{{ object.date|date:"j E Y, H:i" }}</time>{% endlanguage %}{% endif %}<span>{{ object.city }}</span></div>
+  </header>
+  {% if object.is_translation_alive and object.translation_video_code %}<div class="prose event-media">{{ object.translation_video_code|safe }}</div>{% endif %}
+  <div class="prose">{{ object.description_html|default_if_none:""|safe }}</div>
+  {% if object.place_and_time_html %}<section class="event-details"><h2>Место и время</h2><div class="prose">{{ object.place_and_time_html|safe }}</div></section>{% endif %}
+  {% if object.is_registration_available and object.register_url %}<p><a class="button" href="{{ object.register_url }}">Зарегистрироваться ↗</a></p>{% endif %}
+  {% with talks=object.talks.all %}{% if talks %}
+  <section class="event-program">
+    <h2>Программа</h2>
+    {% for talk in talks %}
+    <article class="talk">
+      <div class="speaker">
+        {% if talk.speaker.avatar %}<img src="{{ talk.speaker.avatar.url }}" alt="" width="48" height="48" loading="lazy">{% endif %}
+        <div><strong>{{ talk.speaker.full_name }}</strong>{% if talk.speaker.employer %}<div class="speaker-company">{% if talk.speaker.employer.url %}<a href="{{ talk.speaker.employer.url }}">{{ talk.speaker.employer.name }}</a>{% else %}{{ talk.speaker.employer.name }}{% endif %}</div>{% endif %}</div>
+      </div>
+      <h3>{{ talk.title }}</h3>
+      <div class="prose">{{ talk.description|safe }}</div>
+      {% if talk.slides_url %}<div class="prose event-media">{{ talk.slides_url|safe }}</div>{% endif %}
+      {% if talk.video_url %}<div class="prose event-media">{{ talk.video_url|safe }}</div>{% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}{% endwith %}
+</article>

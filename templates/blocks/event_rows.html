@@ -1,0 +1,4 @@
+{% load i18n %}{% for event in events %}<a class="event-row" href="{{ event.get_absolute_url }}">
+  <time {% if event.date %}datetime="{{ event.date|date:'c' }}"{% endif %}>{% if event.date %}<b>{{ event.date|date:'d' }}</b>{% language 'ru' %}<span>{{ event.date|date:'M'|upper }}</span>{% endlanguage %}{% else %}<span>СКОРО</span>{% endif %}</time>
+  <span><strong>{{ event.name }}</strong><small>{{ event.city }}{% if event.date %} · {{ event.date|date:'Y' }}{% endif %}</small></span>
+</a>{% empty %}<p class="empty-copy">Новые события пока не объявлены.</p>{% endfor %}

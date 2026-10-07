@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
-import sys
 import dj_database_url
 from decouple import config
 
@@ -41,12 +40,12 @@ INSTALLED_APPS = (
     # 'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'apps.content',
+    'apps.portal.apps.PortalConfig',
     'apps.events',
     'apps.news',
     'apps.meetups',
     'apps.banners',
-    'ckeditor',
-    'ckeditor_uploader',
+    'django_ckeditor_5',
 )
 
 MIDDLEWARE = (
@@ -123,9 +122,11 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
+
+# Preserve existing integer primary keys across the framework upgrade.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -146,44 +147,17 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, '../../media')
 MEDIA_URL = '/media/'
-CKEDITOR_UPLOAD_PATH = 'uploads/'
-
-CKEDITOR_CONFIGS = {
+# Uploads remain private to staff; existing /media/uploads/ URLs stay valid.
+CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'staff'
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar_Basic': [['Source', 'Link', 'Unlink', 'SpecialChar', 'Image', 'CodeSnippet']],
-        'toolbar_CustomConfig': [
-            {'name': 'basicstyles',
-             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
-            {'name': 'paragraph',
-             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
-                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl',
-                       'Language']},
-            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
-            {'name': 'insert',
-             'items': ['Image', 'CodeSnippet', 'Embed', 'Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
-            '/',
-            {'name': 'styles', 'items': [
-                'Styles', 'Format', 'Font', 'FontSize']},
-            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
-        ],
-        'toolbar': 'toolbar_CustomConfig',  # put tollbar config name here
-        'removePlugins': ','.join(['stylesheetparser', 'flash']),
-        'allowedContent': True,
-        'extraPlugins': ','.join([
-            'codesnippet',
-            'div',
-            'autolink',
-            'autoembed',
-            'embedsemantic',
-            'autogrow',
-            'widget',
-            'lineutils',
-            'clipboard',
-            'dialog',
-            'dialogui',
-            'elementspath',
-            'embed'
-        ]),
+        'language': 'ru',
+        'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList',
+                    'numberedList', 'blockQuote', 'codeBlock', 'imageUpload',
+                    'insertTable', 'mediaEmbed', 'sourceEditing', '|', 'undo', 'redo'],
+        'image': {'toolbar': ['imageTextAlternative', 'toggleImageCaption',
+                              'imageStyle:inline', 'imageStyle:block', 'imageStyle:side']},
+        'table': {'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells']},
     },
 }
 
@@ -212,3 +186,13 @@ LOGGING = {
 }
 
 DISABLE_RESIZER = os.environ.get('DISABLE_RESIZER', False)
+
+# Delivery is configured explicitly; the management command refuses console backends.
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Python.ru <team@python.ru>')
+SITE_URL = config('SITE_URL', default='https://python.ru')

@@ -1,0 +1,5 @@
+{% load i18n url_tag %}<div class="meta">
+  <span>{% if article.author %}{{ article.author }}{% elif article.is_our %}Python.ru{% else %}{% get_host_from_url article.url %}{% endif %}</span>
+  <span>{% language 'ru' %}<time datetime="{{ article.published_at|date:'c' }}">{{ article.published_at|date:'j E Y' }}</time>{% endlanguage %}</span>
+  {% if article.reading_minutes %}<span>{{ article.reading_minutes }} мин</span>{% endif %}
+</div>

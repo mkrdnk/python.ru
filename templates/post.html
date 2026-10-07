@@ -1,62 +1,27 @@
 {% extends 'base.html' %}
-
-{% load staticfiles nginx_image %}
-{% block title %} | {{ post.name }} {% endblock %}
+{% load i18n url_tag %}
+{% block title %}{{ post.name }} — Python.ru{% endblock %}
+{% block description %}{{ post.description|striptags|truncatewords:30 }}{% endblock %}
 {% block head %}
-
-    <meta property="og:url" content="{{ request.get_host }}{{ request.get_full_path }}">
-    {% if post.image %}
-    <meta property="og:image" content="{% thumbnail post.image %}" />
-    {% else %}
-    <meta property="og:image" content="{{ request.get_host }}{% static "images/python_ru_social_thumb.png" %}" />
-    {% endif %}
-    <meta property="og:title" content="{{ post.name }} " />
-    <meta property="og:description" content="{{ post.description }} " />
-    <meta property="og:type" content="article" />
-
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:title" content="{{ post.name }}">
+  <meta property="og:description" content="{{ post.description|striptags|truncatewords:30 }}">
+  <meta property="og:type" content="article">
+  {% if post.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}">{% endif %}
 {% endblock %}
 {% block main_content %}
-<section class="news-section" id="news">
-  <div class="container">
-    <div class="js-masonry" data-masonry-options='{"columnWidth": 2, "itemSelector": ".grid-item" }'>
-
-      <article class="grid-item large">
-        <div class="item-holder">
-            <div class="text-holder">
-              <div>
-                <time datetime="">{{ article_featured.published_at|date:"j E Y" }}</time>
-              <div class="share-buttons-bar" style="font-family: icomoon">
-                  <a href="https://m.facebook.com/sharer.php?u=https://python.ru/post/{{ post.id }}"><span class="icon-facebook"></span></a>
-
-                  <a href="https://twitter.com/intent/tweet?url=https://python.ru/post/{{ post.id }}&amp;text=@moscowpython {{ post.name }}%20 &amp;via=@moscowpython"><span class="icon-twitter"></span></a>
-
-                  <a rel="nofollow" href="http://vkontakte.ru/share.php?url=https://python.ru/post/{{ post.id }}"><span class="icons-vk"></span></a>
-                  <a rel="nofollow" href="https://t.me/share/url?url=https://python.ru/post/{{ post.id }}"><span class="icons-telegram"></span></a>
-                  <a rel="nofollow" href=" http://www.linkedin.com/shareArticle?mini=true&url=https://python.ru/post/{{ post.id }}"><span class="icons-linkd"></span></a>
-                  <a rel="nofollow" href="https://plus.google.com/share?url=https://python.ru/post/{{ post.id }}"><span class="icons-g-plus"></span></a>
-              </div>
-                <h1>{{ post.name }}</h1>
-                  {% if post.url %}<time datetime="">{{ post.url }}</time>{% endif %}
-                  {% if post.image %}
-                    <img src="{% thumbnail post.image %}" width="792" height="529" alt="">
-                  {% endif %}
-                    <br/>
-                    <br/>
-                    <br/>
-                   <article class="article">
-                       {{ post.text|safe }}
-                   </article>
-              </div>
-            </div>
-        </div>
-      </article>
-
-    {% include 'blocks/news_right_sidebar.html' %}
-
-    </div>
-
-  </div>
-</section>
-	{% include 'blocks/subscribe.html' %}
-	{% include 'blocks/links.html' %}
+<div class="reading-page">
+  <a class="back-link" href="/">← К публикациям</a>
+  <article>
+    <header class="article-heading">
+      {% include 'blocks/article_labels.html' with article=post %}
+      {% include 'blocks/article_meta.html' with article=post %}
+      <h1>{{ post.name }}</h1>
+    </header>
+    {% if post.image %}<img class="article-cover" src="{{ post.image.url }}" alt="">{% endif %}
+    <div class="prose">{% if post.text %}{{ post.text|safe }}{% elif post.description %}{{ post.description|safe }}{% endif %}</div>
+    {% if post.url %}<p class="source-link">Источник: <a href="{{ post.url }}">{% get_host_from_url post.url %} ↗</a></p>{% endif %}
+  </article>
+  <div class="page-bottom"><a href="/">← Все публикации</a><a href="#main-content">Наверх ↑</a></div>
+</div>
 {% endblock %}

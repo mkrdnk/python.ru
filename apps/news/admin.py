@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from apps.news.models import Article
 
@@ -25,15 +25,16 @@ class HasImage(admin.SimpleListFilter):
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['admin_link', 'is_active', 'language', 'published_at', 'has_image', 'is_featured']
-    list_filter = ['is_active', 'is_featured', HasImage, 'language', 'section']
+    list_display = ['admin_link', 'is_active', 'kind', 'language', 'published_at', 'has_image', 'is_featured']
+    search_fields = ['name', 'author', 'tags']
+    list_filter = ['kind', 'is_active', 'is_featured', HasImage, 'language', 'section']
     actions = ['make_active', 'make_inactive']
     list_display_links = None
 
     def admin_link(self, obj):
         url = reverse('admin:news_article_change', args=(obj.id,))
-        return format_html('<a href={url}>{obj.name}</a>'
-                           '<br><span style="color:#ccc">{obj.section}</span>'.format(url=url, obj=obj))
+        return format_html('<a href="{}">{}</a><br><span style="color:#ccc">{}</span>',
+                           url, obj.name, obj.section)
 
     def has_image(self, obj):
         return bool(obj.image)

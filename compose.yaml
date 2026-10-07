@@ -1,0 +1,47 @@
+# Local test environment: docker compose up --build
+services:
+  web:
+    build: .
+    user: "800:800"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - python manage.py migrate --noinput && exec python manage.py runserver 0.0.0.0:8000
+    environment:
+      DJANGO_SETTINGS_MODULE: python_ru.settings.development
+      DJANGO_SECRET_KEY: local-test-environment-only-not-for-production
+      DEBUG: "True"
+      DATABASE_URL: postgresql://pythonru:pythonru-local@db:5432/pythonru
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+      SITE_URL: http://localhost:${WEB_PORT:-8080}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:8000"
+    volumes:
+      - .:/opt/app
+      - media:/opt/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: pythonru
+      POSTGRES_USER: pythonru
+      POSTGRES_PASSWORD: pythonru-local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  media:
