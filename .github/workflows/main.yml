@@ -9,8 +9,23 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: pythonru
+          POSTGRES_PASSWORD: pythonru-test
+          POSTGRES_DB: pythonru
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pythonru -d pythonru"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: "sqlite:///:memory:"
+      DATABASE_URL: ${{ matrix.database == 'postgres' && 'postgresql://pythonru:pythonru-test@127.0.0.1:5432/pythonru' || 'sqlite:///:memory:' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

@@ -15,7 +15,7 @@ LOG_LEVEL='INFO'
 
 if [ "$1" == 'runworker' ]; then
     cd /opt/app
-    exec gosu unprivileged celery -A python_ru worker -l info
+    exec gosu unprivileged python manage.py digest_worker
 fi
 
 if [ "$1" == 'runserver' ]; then

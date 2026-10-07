@@ -1,50 +1,61 @@
 from django.contrib import admin
-from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.translation import gettext as _
 
 from apps.news.models import Article
+from python_ru.admin_mixins import ContributionTargetMixin, PreviewAdminMixin, PublishAdminMixin
 
 
 class HasImage(admin.SimpleListFilter):
-    title = _('Есть картинка')
+    title = 'Есть картинка'
     parameter_name = 'image'
 
     def lookups(self, request, model_admin):
-        return (
-            ('yes', _('Есть')),
-            ('not', _('Нет')),
-        )
+        return [('yes', 'Есть'), ('no', 'Нет')]
 
     def queryset(self, request, queryset):
         if self.value() == 'yes':
             return queryset.exclude(image='')
-        if self.value() == 'no':
+        if self.value() in ('no', 'not'):
             return queryset.filter(image='')
+        return queryset
 
 
 @admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['admin_link', 'is_active', 'kind', 'language', 'published_at', 'has_image', 'is_featured']
+class ArticleAdmin(ContributionTargetMixin, PreviewAdminMixin, PublishAdminMixin, admin.ModelAdmin):
+    list_display = ['name', 'kind', 'author', 'is_active', 'published_at', 'has_image']
     search_fields = ['name', 'author', 'tags']
-    list_filter = ['kind', 'is_active', 'is_featured', HasImage, 'language', 'section']
-    actions = ['make_active', 'make_inactive']
-    list_display_links = None
+    list_filter = ['kind', 'is_active', HasImage]
+    date_hierarchy = 'published_at'
+    preview_template = 'post.html'
+    preview_context_name = 'post'
+    readonly_fields = ['image_preview']
+    fieldsets = [
+        ('Материал', {'fields': ['name', 'kind', 'author', 'description', 'text', 'image', 'image_preview']}),
+        ('Публикация', {'fields': ['tags', 'reading_minutes', 'published_at', 'is_active', 'url']}),
+    ]
 
-    def admin_link(self, obj):
-        url = reverse('admin:news_article_change', args=(obj.id,))
-        return format_html('<a href="{}">{}</a><br><span style="color:#ccc">{}</span>',
-                           url, obj.name, obj.section)
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'url' in form.base_fields:
+            form.base_fields['url'].label = 'Ссылка на оригинал'
+            form.base_fields['url'].help_text = 'Необязательно. Новые материалы открываются на Python.ru.'
+        return form
 
+    def get_changeform_initial_data(self, request):
+        return {'published_at': timezone.now(), **super().get_changeform_initial_data(request)}
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.is_our, obj.language, obj.source = True, 'ru', 'python.ru'
+        super().save_model(request, obj, form, change)
+
+    @admin.display(boolean=True, description='Картинка')
     def has_image(self, obj):
         return bool(obj.image)
-    has_image.short_description = 'Картинка'
-    has_image.boolean = True
 
-    def make_active(self, request, queryset):
-        queryset.update(is_active=True)
-    make_active.short_description = 'Опубликовать'
-
-    def make_inactive(self, request, queryset):
-        queryset.update(is_active=False)
-    make_inactive.short_description = 'Снять с публикации'
+    @admin.display(description='Обложка')
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html('<img src="{}" alt="" style="max-width:320px;max-height:180px">', obj.image.url)
+        return '—'

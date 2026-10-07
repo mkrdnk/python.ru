@@ -1,0 +1,6 @@
+{% extends 'admin/change_form.html' %}
+{% block object-tools-items %}
+{% if preview_url %}<li><a href="{{ preview_url }}" target="_blank">Предпросмотр</a></li>{% endif %}
+{% for action in editorial_links %}<li><a href="{{ action.url }}">{{ action.title }}</a></li>{% endfor %}
+{{ block.super }}
+{% endblock %}

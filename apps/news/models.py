@@ -54,6 +54,6 @@ class Article(TimeStampedModel):
         return self.name
 
     class Meta:
-        verbose_name = 'Новость'
-        verbose_name_plural = 'Новости'
+        verbose_name = 'Материал'
+        verbose_name_plural = 'Материалы'
         ordering = ['-published_at', '-id']

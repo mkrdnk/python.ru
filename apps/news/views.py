@@ -6,7 +6,6 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
-from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 
 from apps.news.models import Article
@@ -95,10 +94,3 @@ class PostView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['post'] = get_object_or_404(Article.objects.active(), pk=self.kwargs['pk'])
         return context
-
-
-class JuniorView(RedirectView):
-    permanent = True
-
-    def get_redirect_url(self, *args, **kwargs):
-        return '/meetups/junior/'  # FIXME: make this alive

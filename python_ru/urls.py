@@ -7,13 +7,13 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from apps.news import views as news_views
 from apps.portal import views as portal_views
-from apps.meetups.views import EventDetailView
+from apps.events.views import EventDetailView, legacy_event
 
 
 urlpatterns = [
     re_path(r'^$', news_views.IndexView.as_view(), name='index'),
-    re_path(r'^meetups/', include('apps.meetups.urls')),
-    re_path(r'^junior/$', news_views.JuniorView.as_view(), name='junior'),
+    re_path(r'^meetups/(?P<event_slug>[\w-]+)/$', legacy_event, name='event_detail_view'),
+    re_path(r'^junior/$', legacy_event, {'event_slug': 'junior'}, name='junior'),
     re_path(r'^post/(?P<pk>\d+)/$', news_views.PostView.as_view(), name='post_page'),
 
     re_path(r'^materials/$', news_views.IndexView.as_view(section='materials'), name='materials'),

@@ -146,8 +146,8 @@ In ``/admin/``:
 
 * Articles support type (including notes/interviews/translations), author,
   comma-separated tags and optional reading time. Only active items are public.
-* Events retain their existing editor and talks. Internal event pages and
-  external event URLs are both supported.
+* Events use a simple calendar: name, city, date, rich description, URL and publication status.
+  Talks, speakers, employers, registration and broadcast settings have been retired.
 * The Portal section manages projects, communities, informational pages,
   private reader submissions, subscribers and digest issues.
 * Projects and communities are drafts by default. Star/member counts are
@@ -155,19 +155,109 @@ In ``/admin/``:
 * Initial informational pages and the Moscow Python link are created by a
   migration. Reference mock articles, events and counts are not imported.
 
-Subscription forms store addresses and unsubscribe links appear in each digest.
-No emails are sent by migrations, signup or admin saves. To deliver an issue,
-configure ``EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend``,
+Editorial administration
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Django admin is grouped by editorial tasks rather than application names.
+Articles expose only content and publication fields. Source, language, imported
+category, external ID and legacy feature flags are retained in the database but
+hidden from every admin form and list. New manually created articles open on
+Python.ru; their optional original URL is a source link. Existing articles and
+the Python Digest importer retain their previous link behaviour.
+
+After deploying, synchronize the managed editor group::
+
+    python manage.py setup_editor_roles
+
+Assign ``Редакторы`` to staff users in the user admin. Re-running this command
+restores the group's documented permission set; use another group for custom
+permissions. It does not assign users automatically. Editors may create, edit
+and publish content and prepare digests. They cannot delete content, manage
+users, subscribers or advertisements, or send digests. Superusers retain full
+access; delegated administrators need the relevant model permissions and
+``portal.send_digest`` to send or resolve deliveries.
+
+Use **Предпросмотр** on a saved record to inspect its current saved version.
+Previews require staff access and model view/change permission, are not cached,
+and render in a sandboxed frame. Public URLs still hide unpublished content.
+
+Reader proposals retain the original submission as read-only. Assign an editor,
+add internal notes, and choose **Создать черновик**. Fill in missing required
+fields and save; this creates one linked draft and marks the proposal as under
+review. Cancelling the form does not create anything. Repeated requests open
+the existing draft. Mark the proposal processed explicitly when finished.
+
+Meetup retirement and deployment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Back up the database and media before migrating.** The new migrations delete
+talks, speakers, employers and event registration/broadcast/place-and-time fields.
+Rollback does not restore deleted data; restoring the backup is required.
+Event IDs, names, cities, dates, descriptions and external URLs remain intact.
+Uploaded avatar files are not removed automatically.
+
+``apps.meetups`` remains installed only as a migration compatibility shell; it
+has no runtime models or admin screens. Existing unique, published meetup slugs
+redirect permanently to ``/events/ID/``. Missing or ambiguous slugs return 410;
+``/junior/`` uses the same rule for the old ``junior`` slug. Events with an
+external URL link to that URL; other events use their internal calendar page.
+
+Deployment sequence: stop web writes and old mail senders, back up data, deploy
+the new code, run ``migrate``, ``setup_editor_roles`` and ``collectstatic``, then
+start the web service and new digest worker. Check public pages, editor access
+and the worker heartbeat before enabling sends. The production Compose file is
+maintained outside this repository and must be updated separately.
+
+Digest queue
+~~~~~~~~~~~~
+
+Subscription forms store addresses; each delivered issue contains an unsubscribe
+link. No email is sent by signup, migrations, ordinary saves or preview.
+Editors prepare issues. An administrator chooses **Отправить выпуск**, reviews
+the saved preview and recipient count, and confirms. This freezes the content
+and active recipient list, then queues deliveries in PostgreSQL. New subscribers
+are not added later; subscribers who unsubscribe before sending are skipped.
+Queued issues are read-only; **Копировать в черновик** creates an editable issue.
+
+Configure ``EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend``,
 ``EMAIL_HOST``, ``EMAIL_PORT``, ``EMAIL_HOST_USER``, ``EMAIL_HOST_PASSWORD``,
-``EMAIL_USE_TLS``, ``DEFAULT_FROM_EMAIL`` and ``SITE_URL``. Then::
+``EMAIL_USE_TLS``, ``DEFAULT_FROM_EMAIL`` and ``SITE_URL``. SMTP calls use a
+30-second timeout. Run the worker as a separate supervised process, sharing the
+web application's database and mail configuration::
 
-    python manage.py send_digest ISSUE_ID          # preview recipient count
-    python manage.py send_digest ISSUE_ID --send   # send the approved issue
+    python manage.py digest_worker
+    python manage.py check_digest_worker
 
-Run one sender at a time. Successful deliveries are recorded so ordinary retries
-skip them; as with SMTP generally, a process crash after the server accepts a
-message but before the database commit can require manual delivery reconciliation.
-The command does not schedule recurring sends. Store SMTP credentials outside git.
+The Docker image supports ``runworker`` as its command. Locally, after configuring
+SMTP in the shell or ``.env``, start the optional worker profile::
+
+    docker compose --profile mail up --build -d
+
+The worker depends on the web health check, so migrations complete first.
+Default Compose uses a console backend and does not start a worker. The worker
+refuses non-SMTP backends. Do not configure real recipient data for local tests.
+No Redis, Celery or periodic mail schedule is required.
+
+The CLI uses the same queue::
+
+    python manage.py send_digest ISSUE_ID          # show audience; send nothing
+    python manage.py send_digest ISSUE_ID --send   # freeze and queue; does not send inline
+    python manage.py digest_worker --once          # process available jobs and exit
+
+Repeated enqueue requests do not add recipients or repeat successful deliveries.
+Multiple workers reserve deliveries using PostgreSQL row locks. The admin shows
+progress, errors and whether a worker checked in during the last two minutes.
+Monitor ``check_digest_worker`` and service logs; pending jobs remain queued
+when workers are stopped.
+
+After a worker interruption, reservations older than five minutes become
+**Результат неизвестен**. SMTP exceptions with an uncertain outcome also require
+review. Consult the SMTP provider's logs, then use **Подтвердить доставку** or
+**Повторить доставку** on that delivery. These actions require send and delivery
+change permissions, explicit POST confirmation, and are recorded in the admin
+log. SMTP cannot guarantee exactly-once delivery across process crashes.
+Historical successful deliveries are preserved; previously sent or partially
+sent issues are closed rather than automatically resumed.
 
 Banners
 ~~~~~~~

@@ -1,0 +1,6 @@
+{% extends 'admin/index.html' %}
+{% block content %}
+<div class="module"><h2>Сегодня в редакции</h2><ul>
+{% for item in shortcuts %}<li><a href="{{ item.url }}">{{ item.title }}</a>: {{ item.count }}</li>{% empty %}<li>Доступные разделы перечислены ниже.</li>{% endfor %}
+</ul></div>{{ block.super }}
+{% endblock %}

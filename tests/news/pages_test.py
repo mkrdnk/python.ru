@@ -5,7 +5,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.events.models import City, Event
-from apps.meetups.models import Employer, Speaker, Talk
 from apps.news.factories import ArticleFactory
 
 
@@ -51,24 +50,23 @@ def test_missing_or_inactive_article_is_friendly_404(client):
 
 
 @pytest.mark.django_db
-def test_meetup_without_avatar_and_with_embedded_media(client):
+def test_calendar_and_legacy_event_urls(client):
     city = City.objects.create(name='Москва')
     event = Event.objects.create(name='Python Meetup', slug='test-meetup', city=city,
-                                 description_html='<p>Описание встречи</p>',
-                                 is_registration_available=True, register_url='https://example.org/register')
-    employer = Employer.objects.create(name='Company')
-    speaker = Speaker.objects.create(first_name='Имя', last_name='Фамилия', employer=employer)
-    Talk.objects.create(event=event, speaker=speaker, title='Доклад', description='<p>Описание доклада</p>',
-                        video_url='<iframe src="https://example.org/video" title="Видео"></iframe>')
-    response = client.get('/meetups/test-meetup/')
-    html = response.content.decode()
+                                 description_html='<p>Описание встречи</p>')
+    response = client.get(f'/events/{event.pk}/')
     assert response.status_code == 200
-    for expected in ['Python Meetup', 'Описание встречи', 'Доклад', 'Имя Фамилия',
-                     'https://example.org/register', '<iframe', 'css/site.css', 'К публикациям']:
-        assert expected in html
-    assert 'Немного о нас' not in html
-    assert 'Ближайшие события' not in html
-    assert 'jquery' not in html
+    assert 'Описание встречи' in response.content.decode()
+    assert 'event-program' not in response.content.decode()
+    legacy = client.get('/meetups/test-meetup/')
+    assert legacy.status_code == 301
+    assert legacy.url == f'/events/{event.pk}/'
+    assert client.get('/meetups/missing/').status_code == 410
+    Event.objects.create(name='Duplicate', slug='test-meetup', city=city)
+    assert client.get('/meetups/test-meetup/').status_code == 410
+    event.is_active = False
+    event.save()
+    assert client.get(f'/events/{event.pk}/').status_code == 404
 
 
 @pytest.mark.django_db

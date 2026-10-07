@@ -92,9 +92,11 @@ def test_digest_dry_run_and_retry_dont_resend(client):
         with pytest.raises(CommandError):
             call_command('send_digest', digest.pk, send=True)
     with override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'):
-        with patch('apps.portal.management.commands.send_digest.EmailMultiAlternatives.send', return_value=1) as send:
+        with patch('apps.portal.delivery.EmailMultiAlternatives.send', return_value=1) as send:
             call_command('send_digest', digest.pk, send=True, stdout=StringIO())
+            call_command('digest_worker', once=True, stdout=StringIO())
             call_command('send_digest', digest.pk, send=True, stdout=StringIO())
+            call_command('digest_worker', once=True, stdout=StringIO())
             assert send.call_count == 1
     assert Delivery.objects.count() == 1
 

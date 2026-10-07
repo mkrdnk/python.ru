@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block main_content %}<div class="reading-page">
+{% if section == 'project' %}{% include 'blocks/project_rows.html' with projects=entries %}
+{% else %}{% include 'blocks/community_rows.html' with communities=entries %}{% endif %}
+</div>{% endblock %}

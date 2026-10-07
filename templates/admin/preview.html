@@ -1,0 +1,5 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<p>Предпросмотр сохранённой версии. Несохранённые изменения здесь не отображаются.</p>
+<iframe title="Предпросмотр" sandbox="" srcdoc="{{ preview_html|force_escape }}" style="width:100%;height:80vh;border:1px solid #aaa"></iframe>
+{% endblock %}

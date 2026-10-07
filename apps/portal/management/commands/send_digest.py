@@ -1,16 +1,10 @@
-from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-from django.urls import reverse
-from django.utils import timezone
-from django.utils.html import escape, strip_tags
-
-from apps.portal.models import Delivery, Digest, Subscriber
+from apps.portal.delivery import enqueue
+from apps.portal.models import Digest, Subscriber
 
 
 class Command(BaseCommand):
-    help = 'Preview a digest delivery count. Use --send after configuring SMTP to send it.'
+    help = 'Preview recipient count; --send freezes the audience and queues delivery for digest_worker.'
 
     def add_arguments(self, parser):
         parser.add_argument('digest_id', type=int)
@@ -21,35 +15,13 @@ class Command(BaseCommand):
             digest = Digest.objects.get(pk=options['digest_id'])
         except Digest.DoesNotExist:
             raise CommandError('Digest not found')
-        subscribers = Subscriber.objects.filter(is_active=True).exclude(delivery__digest=digest)
         if not options['send']:
-            self.stdout.write('{} recipients; no email sent. Use --send to deliver.'.format(subscribers.count()))
+            count = (Subscriber.objects.filter(is_active=True).count() if digest.state == 'draft'
+                     else digest.delivery_set.count())
+            self.stdout.write(f'{count} recipients; no email sent. Use --send to queue delivery.')
             return
-        if settings.EMAIL_BACKEND != 'django.core.mail.backends.smtp.EmailBackend':
-            raise CommandError('Configure the SMTP email backend before sending.')
-        error = None
-        sent = 0
-        # Lock the issue so two workers cannot send the same issue concurrently.
-        # Commit completed deliveries even when a later recipient fails.
-        with transaction.atomic():
-            digest = Digest.objects.select_for_update().get(pk=digest.pk)
-            for subscriber in subscribers:
-                unsubscribe = settings.SITE_URL.rstrip('/') + reverse('unsubscribe', args=[subscriber.token])
-                html = digest.body + '<p><a href="{}">Отписаться от дайджеста</a></p>'.format(escape(unsubscribe))
-                email = EmailMultiAlternatives(digest.subject, strip_tags(digest.body) + '\n\nОтписаться: ' + unsubscribe,
-                                               settings.DEFAULT_FROM_EMAIL, [subscriber.email])
-                email.attach_alternative(html, 'text/html')
-                try:
-                    if not email.send():
-                        raise RuntimeError('Mail backend accepted no message')
-                except Exception as exc:
-                    error = str(exc)
-                    break
-                Delivery.objects.create(digest=digest, subscriber=subscriber)
-                sent += 1
-            if error is None:
-                digest.sent_at = timezone.now()
-                digest.save(update_fields=['sent_at'])
-        self.stdout.write('{} messages sent.'.format(sent))
-        if error:
-            raise CommandError('Delivery stopped; retry skips recorded deliveries: {}'.format(error))
+        try:
+            digest = enqueue(digest.pk)
+        except ValueError as exc:
+            raise CommandError(str(exc))
+        self.stdout.write(f'Digest {digest.pk}: {digest.state}. Run digest_worker to process the queue.')

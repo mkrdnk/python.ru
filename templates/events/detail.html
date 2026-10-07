@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}{{ object.name }} — Python.ru{% endblock %}
+{% block main_content %}
+<div class="reading-page"><a href="{% url 'events' %}">← Все события</a>
+<h1>{{ object.name }}</h1><p>{{ object.city }}{% if object.date %} · {{ object.date|date:'j E Y, H:i' }}{% endif %}</p>
+<div class="prose">{{ object.description_html|default_if_none:''|safe }}</div>
+{% if object.url %}<p><a href="{{ object.url }}">Сайт события ↗</a></p>{% endif %}
+</div>
+{% endblock %}
