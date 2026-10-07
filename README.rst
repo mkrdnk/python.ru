@@ -16,6 +16,31 @@ must be version 14 or newer for Django 5.2.
     python manage.py runserver
     python manage.py createsuperuser
 
+Environment settings
+~~~~~~~~~~~~~~~~~~~~
+
+Copy ``.env.example`` to ``.env`` in the project root for local configuration.
+Settings read through python-decouple use process environment variables first,
+then ``.env``. For example::
+
+    DEBUG=True
+    ALLOWED_HOSTS=localhost,127.0.0.1,dev.example.com
+    CSRF_TRUSTED_ORIGINS=https://dev.example.com
+    SITE_URL=https://dev.example.com
+
+``ALLOWED_HOSTS`` is a comma-separated list of hostnames without schemes, ports
+or paths. ``CSRF_TRUSTED_ORIGINS`` is a comma-separated list of trusted origins
+including their scheme and non-standard port, if any; leave it empty unless
+cross-origin unsafe requests need to be allowed. ``SITE_URL`` is the public
+base URL used for email links. Use ``DEBUG=False`` and a unique
+``DJANGO_SECRET_KEY`` in production; never commit real secrets.
+
+``DJANGO_SETTINGS_MODULE`` must be supplied in the process environment to
+select a settings module; putting it in ``.env`` alone does not select one.
+``manage.py`` defaults to development, while WSGI defaults to production.
+Likewise, ``DATABASE_URL`` is read from the process environment, not ``.env``.
+See ``.env.example`` for the separate production database variables.
+
 Local test environment with Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -29,6 +54,14 @@ To choose another port, use ``WEB_PORT=8081 docker compose up --build -d --wait`
 No .env file is required. This configuration is for local testing: DEBUG is on,
 credentials are disposable local defaults, and Django serves static files and
 uploads directly. Emails go to container logs.
+
+Compose also accepts ``DJANGO_SECRET_KEY``, ``DEBUG``, ``ALLOWED_HOSTS``,
+``CSRF_TRUSTED_ORIGINS`` and ``SITE_URL`` from the shell or root ``.env`` file.
+With no overrides, ``SITE_URL`` follows ``WEB_PORT``. If copying ``.env.example``,
+adjust its ``SITE_URL`` to the chosen Compose port (8080 by default).
+Recreate the web container after changing environment values::
+
+    docker compose up -d
 
 Code is mounted from the current checkout; Django reloads Python changes.
 Rebuild the image after changing requirements. Migrations run automatically
